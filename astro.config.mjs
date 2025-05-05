@@ -10,13 +10,13 @@ import svelte from "@astrojs/svelte";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://your-domain.com", // Update this with your actual domain once deployed
+  site: "https://yashwanthxyz.vercel.app",
   integrations: [
     sitemap(),
     robotsTxt({
       sitemap: [
-        "https://your-domain.com/sitemap-index.xml",
-        "https://your-domain.com/sitemap-0.xml",
+        "https://yashwanthxyz.vercel.app/sitemap-index.xml",
+        "https://yashwanthxyz.vercel.app/sitemap-0.xml",
       ],
     }),
     solidJs(),
