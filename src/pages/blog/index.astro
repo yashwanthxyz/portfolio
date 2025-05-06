@@ -1,58 +1,56 @@
 ---
-import { getCollection } from "astro:content";
-import Layout from "../../layouts/Layout.astro";
-import PostRow from "../../components/Blog/PostRow.astro";
+import { type CollectionEntry, getCollection } from "astro:content";
+import PageLayout from "@layouts/PageLayout.astro";
+import Container from "@components/Container.astro";
+import ArrowCard from "@components/ArrowCard.astro";
+import { BLOG } from "@consts";
 
-const posts = (await getCollection("blog"))?.sort((a, b) => {
-  const pubDateDiff = (b.data.pubDate || new Date()).getTime() - (a.data.pubDate || new Date()).getTime();
-  if (pubDateDiff === 0) {
-    return (b.data.createdAt || new Date()).getTime() - (a.data.createdAt || new Date()).getTime();
-  }
-  return pubDateDiff;
-});
+const data = (await getCollection("blog"))
+  .filter(post => !post.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  
+type Acc = {
+  [year: string]: CollectionEntry<"blog">[];
+}
+
+const posts = data.reduce((acc: Acc, post) => {
+    const year = post.data.date.getFullYear().toString();
+    if (!acc[year]) {
+      acc[year] = [];
+    }
+    acc[year].push(post);
+    return acc;
+  }, {});
+
+const years = Object.keys(posts).sort((a, b) => parseInt(b) - parseInt(a)); 
 ---
 
-<script>
-  import { animate, type AnimationSequence } from "motion";
-  import { loaderAnimation } from "../../lib/constants";
-
-  const sequence = [loaderAnimation];
-  animate(sequence as AnimationSequence);
-</script>
-
-<Layout
-  description="A collection of articles and thoughts about technology, programming, and more"
-  title="Yashwanth - Blog"
->
-  <main class="w-screen min-h-screen bg-neutral-950">
-    <div class="max-w-3xl mx-auto px-6 py-16">
-      <nav class="mb-12">
-        <a
-          class="inline-flex items-center gap-2 text-neutral-400 hover:text-white transition-colors"
-          href="/"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          Back
-        </a>
-      </nav>
-
-      <header class="mb-12">
-        <h1 class="text-4xl font-bold mb-4 text-white">Blog</h1>
-      </header>
-
-      <ul class="space-y-1">
-        {
-          posts?.map((post) => (
-            <PostRow
-              date={post.data.pubDate || new Date()}
-              id={post.id}
-              title={post.data.title || "No title"}
-            />
-          ))
-        }
-      </ul>
+<PageLayout title={BLOG.TITLE} description={BLOG.DESCRIPTION}>
+  <Container>
+    <div class="space-y-10">
+      <div class="animate font-semibold text-black dark:text-white">
+        Blog
+      </div>
+      <div class="space-y-4">
+        {years.map(year => (
+          <section class="animate space-y-4">
+            <div class="font-semibold text-black dark:text-white">
+              {year}
+            </div>
+            <div>
+              <ul class="flex flex-col gap-4">
+                {
+                  posts[year].map((post) => (
+                    <li>
+                      <ArrowCard entry={post}/>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </section>
+        ))}
+      </div>
     </div>
-  </main>
-</Layout>
+  </Container>
+</PageLayout>
